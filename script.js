@@ -8,7 +8,9 @@ document.getElementById('solve-button').addEventListener('click', async () => {
         
         img.onload = async () => {
             try {
-                const result = await Tesseract.recognize(img, 'eng');
+                const result = await Tesseract.recognize(img, 'eng', {
+                    logger: info => console.log(info) // Optional: log progress
+                });
                 const extractedText = result.data.text;
                 document.getElementById('result').innerText = `Extracted Text: \n${extractedText}`;
 
@@ -19,9 +21,41 @@ document.getElementById('solve-button').addEventListener('click', async () => {
                 document.getElementById('result').innerText = "OCR processing failed.";
             }
         };
+
+        img.onerror = () => {
+            console.error("Error loading image");
+            document.getElementById('result').innerText = "Error loading image.";
+        };
     } else {
         document.getElementById('result').innerText = "Please upload an image.";
     }
 });
 
-// Define solveProblems and other helper functions as described previously...
+// Example solveProblems function
+function solveProblems(text) {
+    const lines = text.split('\n');
+    const solutions = [];
+    
+    lines.forEach(line => {
+        line = line.trim();
+        if (line) {
+            // Simple math problem example
+            if (isMathProblem(line)) {
+                try {
+                    const result = eval(line);
+                    solutions.push(`Math: ${line} = ${result}`);
+                } catch {
+                    solutions.push(`Math: ${line} = Error`);
+                }
+            } else {
+                solutions.push(`Unrecognized: ${line}`);
+            }
+        }
+    });
+    
+    return solutions;
+}
+
+function isMathProblem(line) {
+    return /\d+[\+\-\*\/]\d+/.test(line);
+}
