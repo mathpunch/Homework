@@ -7,13 +7,16 @@ document.getElementById('solve-button').addEventListener('click', async () => {
         img.src = URL.createObjectURL(file);
         
         img.onload = async () => {
+            console.log("Image loaded");
+
             try {
-                const result = await Tesseract.recognize(img, 'eng', {
-                    logger: info => console.log(info) // Optional: log progress
+                const result = await Tesseract.recognize(img.src, 'eng', {
+                    logger: info => console.log(info) // Log progress
                 });
+                console.log("OCR Result:", result);
                 const extractedText = result.data.text;
                 document.getElementById('result').innerText = `Extracted Text: \n${extractedText}`;
-
+                
                 const solutions = solveProblems(extractedText);
                 document.getElementById('result').innerText += `\n\nSolutions: \n${solutions.join('\n')}`;
             } catch (error) {
@@ -42,7 +45,7 @@ function solveProblems(text) {
             // Simple math problem example
             if (isMathProblem(line)) {
                 try {
-                    const result = eval(line);
+                    const result = eval(line); // Caution: eval can be dangerous; ensure input is safe
                     solutions.push(`Math: ${line} = ${result}`);
                 } catch {
                     solutions.push(`Math: ${line} = Error`);
@@ -57,5 +60,5 @@ function solveProblems(text) {
 }
 
 function isMathProblem(line) {
-    return /\d+[\+\-\*\/]\d+/.test(line);
+    return /\d+[\+\-\*\/]\d+/.test(line); // Basic check for simple math expressions
 }
